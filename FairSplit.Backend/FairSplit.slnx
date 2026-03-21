@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/FairSplit.Api/FairSplit.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/FairSplit.ArchitectureTests/FairSplit.ArchitectureTests.csproj" />
+    <Project Path="tests/FairSplit.LayerIsolationTests/FairSplit.LayerIsolationTests.csproj" />
+  </Folder>
+</Solution>
