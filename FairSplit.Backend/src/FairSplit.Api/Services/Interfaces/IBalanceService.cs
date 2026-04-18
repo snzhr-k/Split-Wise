@@ -1,6 +1,8 @@
+using FairSplit.Api.Domain.Entities;
+
 namespace FairSplit.Api.Services.Interfaces;
 
 public interface IBalanceService
 {
-    Task HandlePlaceholderAsync(CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<Balance>> GetByGroupIdAsync(Guid groupId, CancellationToken cancellationToken);
 }
