@@ -14,6 +14,16 @@ public sealed class ExpenseParticipantRepository(FairSplitDbContext dbContext) :
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyCollection<ExpenseParticipant>> GetByExpenseIdAsync(
+        Guid expenseId,
+        CancellationToken cancellationToken)
+    {
+        return await dbContext.ExpenseParticipants
+            .AsNoTracking()
+            .Where(expenseParticipant => expenseParticipant.ExpenseId == expenseId)
+            .ToListAsync(cancellationToken);
+    }
+
     public Task AddRangeAsync(
         IReadOnlyCollection<ExpenseParticipant> expenseParticipants,
         CancellationToken cancellationToken)

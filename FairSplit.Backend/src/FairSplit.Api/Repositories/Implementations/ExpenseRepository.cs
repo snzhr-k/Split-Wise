@@ -11,7 +11,28 @@ public sealed class ExpenseRepository(FairSplitDbContext dbContext) : IExpenseRe
     {
         return await dbContext.Expenses
             .AsNoTracking()
+            .OrderByDescending(expense => expense.CreatedAtUtc)
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyCollection<Expense>> GetByGroupIdAsync(
+        Guid groupId,
+        CancellationToken cancellationToken)
+    {
+        return await dbContext.Expenses
+            .AsNoTracking()
+            .Where(expense => expense.GroupId == groupId)
+            .OrderByDescending(expense => expense.CreatedAtUtc)
+            .ToListAsync(cancellationToken);
+    }
+
+    public Task<Expense?> GetByIdAsync(Guid groupId, Guid expenseId, CancellationToken cancellationToken)
+    {
+        return dbContext.Expenses
+            .AsNoTracking()
+            .FirstOrDefaultAsync(
+                expense => expense.GroupId == groupId && expense.Id == expenseId,
+                cancellationToken);
     }
 
     public Task AddAsync(Expense expense, CancellationToken cancellationToken)

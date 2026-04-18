@@ -11,4 +11,9 @@ public sealed class FairSplitDbContext(DbContextOptions<FairSplitDbContext> opti
     public DbSet<ExpenseParticipant> ExpenseParticipants => Set<ExpenseParticipant>();
     public DbSet<Balance> Balances => Set<Balance>();
     public DbSet<Settlement> Settlements => Set<Settlement>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(FairSplitDbContext).Assembly);
+    }
 }

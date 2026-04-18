@@ -16,6 +16,43 @@ public sealed class ExpenseService(
     ITransactionManager transactionManager,
     IClock clock) : IExpenseService
 {
+    public async Task<IReadOnlyCollection<Expense>> GetByGroupIdAsync(Guid groupId, CancellationToken cancellationToken)
+    {
+        var groupExists = await groupRepository.ExistsAsync(groupId, cancellationToken);
+
+        if (!groupExists)
+        {
+            throw new NotFoundException($"Group '{groupId}' was not found.");
+        }
+
+        return await expenseRepository.GetByGroupIdAsync(groupId, cancellationToken);
+    }
+
+    public async Task<ExpenseDetailsModel> GetByIdAsync(Guid groupId, Guid expenseId, CancellationToken cancellationToken)
+    {
+        var groupExists = await groupRepository.ExistsAsync(groupId, cancellationToken);
+
+        if (!groupExists)
+        {
+            throw new NotFoundException($"Group '{groupId}' was not found.");
+        }
+
+        var expense = await expenseRepository.GetByIdAsync(groupId, expenseId, cancellationToken);
+
+        if (expense is null)
+        {
+            throw new NotFoundException($"Expense '{expenseId}' was not found in group '{groupId}'.");
+        }
+
+        var participants = await expenseParticipantRepository.GetByExpenseIdAsync(expense.Id, cancellationToken);
+
+        return new ExpenseDetailsModel
+        {
+            Expense = expense,
+            Participants = participants
+        };
+    }
+
     public async Task<Expense> CreateAsync(CreateExpenseCommand command, CancellationToken cancellationToken)
     {
         if (command.Amount <= 0)
