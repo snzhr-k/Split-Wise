@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 
 import { apiConfig, getApiBaseUrlHelpText } from '../config/env';
+import { theme } from '../theme';
 
 export function RootScreen() {
   return (
@@ -22,44 +23,51 @@ export function RootScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingVertical: 24,
-    gap: 16,
+    paddingHorizontal: theme.spacing.xl,
+    paddingVertical: theme.spacing.xxl,
+    gap: theme.spacing.lg,
   },
   title: {
-    fontSize: 30,
-    fontWeight: '700',
-    color: '#1f2a37',
+    fontSize: theme.typography.fontSize.xxl,
+    lineHeight: theme.typography.lineHeight.xxl,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.textPrimary,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#4b5563',
+    fontSize: theme.typography.fontSize.lg,
+    lineHeight: theme.typography.lineHeight.lg,
+    color: theme.colors.textSecondary,
   },
   card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.md,
+    padding: theme.spacing.lg,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
-    gap: 6,
+    borderColor: theme.colors.border,
+    gap: theme.spacing.xs + 2,
+    ...theme.shadows.card,
   },
   cardLabel: {
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: theme.typography.fontSize.sm,
+    lineHeight: theme.typography.lineHeight.sm,
+    fontWeight: theme.typography.fontWeight.semibold,
     textTransform: 'uppercase',
-    color: '#6b7280',
+    color: theme.colors.textMuted,
   },
   cardValue: {
-    fontSize: 15,
-    color: '#111827',
+    fontSize: theme.typography.fontSize.md,
+    lineHeight: theme.typography.lineHeight.md,
+    color: theme.colors.textPrimary,
   },
   helpText: {
-    fontSize: 14,
-    color: '#374151',
+    fontSize: theme.typography.fontSize.md,
+    lineHeight: theme.typography.lineHeight.md,
+    color: theme.colors.textSecondary,
   },
   todoText: {
-    marginTop: 4,
-    fontSize: 14,
-    color: '#6b7280',
+    marginTop: theme.spacing.xs,
+    fontSize: theme.typography.fontSize.md,
+    lineHeight: theme.typography.lineHeight.md,
+    color: theme.colors.textMuted,
   },
 });

@@ -1,12 +1,13 @@
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView, StyleSheet } from 'react-native';
 
-import { RootScreen } from './src/screens/RootScreen';
+import { RootNavigator } from './src/app/navigation/RootNavigator';
+import { theme } from './src/theme';
 
 export default function App() {
   return (
     <SafeAreaView style={styles.container}>
-      <RootScreen />
+      <RootNavigator />
       <StatusBar style="dark" />
     </SafeAreaView>
   );
@@ -15,6 +16,6 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f7f8fa',
+    backgroundColor: theme.colors.background,
   },
 });
