@@ -15,7 +15,7 @@ public sealed class BalanceService(
 
         if (!groupExists)
         {
-            throw new NotFoundException($"Group '{groupId}' was not found.");
+            throw new NotFoundException("Group was not found.", "GROUP_NOT_FOUND");
         }
 
         return await balanceRepository.GetByGroupIdAsync(groupId, cancellationToken);

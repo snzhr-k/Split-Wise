@@ -20,7 +20,7 @@ export function CreateExpenseScreen({ group, onBack }: CreateExpenseScreenProps)
 
 	const { members, isLoading, errorMessage: membersErrorMessage, reload } = useGroupMembers(group.id);
 
-	const { isSubmitting, errorMessage, submit } = useCreateExpense(group.id);
+	const { isSubmitting, errorMessage, fieldErrors, submit } = useCreateExpense(group.id);
 
 	const normalizedPayerId = payerMemberId.trim();
 	const hasMembers = members.length > 0;
@@ -126,8 +126,9 @@ export function CreateExpenseScreen({ group, onBack }: CreateExpenseScreenProps)
 					onChangeText={setAmountInput}
 					placeholder="e.g. 120.50"
 					keyboardType="decimal-pad"
-					style={styles.input}
+					style={[styles.input, fieldErrors.amount ? styles.inputError : null]}
 				/>
+				{fieldErrors.amount ? <Text style={styles.fieldErrorText}>{fieldErrors.amount}</Text> : null}
 
 				<Text style={styles.sectionLabel}>Split type</Text>
 				<Text style={styles.helperText}>Equal split (current MVP scope)</Text>
@@ -262,6 +263,15 @@ const styles = StyleSheet.create({
 		fontSize: theme.typography.fontSize.md,
 		lineHeight: theme.typography.lineHeight.md,
 		color: theme.colors.textPrimary,
+	},
+	inputError: {
+		borderColor: theme.colors.danger,
+	},
+	fieldErrorText: {
+		fontSize: theme.typography.fontSize.sm,
+		lineHeight: theme.typography.lineHeight.sm,
+		color: theme.colors.danger,
+		marginTop: theme.spacing.xs,
 	},
 	chipsRow: {
 		flexDirection: 'row',

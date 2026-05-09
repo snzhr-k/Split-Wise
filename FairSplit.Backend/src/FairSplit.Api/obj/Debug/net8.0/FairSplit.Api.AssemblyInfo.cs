@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("FairSplit.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+365cf14ea5ccd3fc1aa92dbb7ee1ae1bf8b1c200")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c292ebe1b46cd400b2d410ae55dec539c7bd5fb8")]
 [assembly: System.Reflection.AssemblyProductAttribute("FairSplit.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("FairSplit.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

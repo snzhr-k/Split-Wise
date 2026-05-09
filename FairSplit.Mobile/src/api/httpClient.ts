@@ -1,60 +1,108 @@
+import type { BackendError, ValidationDetail, NetworkError } from '../services/errorTypes';
 import { apiConfig } from '../config/env';
 
-export type ApiError = {
-  status: number;
-  message: string;
-};
-
-type ApiErrorResponse = {
+/**
+ * Backend error response structure matching our backend error taxonomy.
+ */
+type BackendErrorResponse = {
+  code?: string;
   message?: string;
+  details?: Array<{
+    field: string;
+    issue: string;
+    value?: unknown;
+  }>;
+  traceId?: string;
 };
 
-async function buildApiError(response: Response): Promise<ApiError> {
-  let message = `Request failed: ${response.status}`;
+/**
+ * Parse backend error response into structured BackendError.
+ * Handles both new structured errors and legacy error responses.
+ */
+async function parseBackendError(response: Response): Promise<BackendError | NetworkError> {
+  let errorBody: BackendErrorResponse | null = null;
 
   try {
-    const errorBody = (await response.json()) as ApiErrorResponse;
-    if (typeof errorBody.message === 'string' && errorBody.message.trim().length > 0) {
-      message = errorBody.message;
-    }
+    errorBody = (await response.json()) as BackendErrorResponse;
   } catch {
-    // Keep default message when response body is missing or invalid JSON.
+    // Response is not valid JSON - treat as network error
+    return {
+      code: 'NETWORK_ERROR',
+      message: `Request failed with status ${response.status}`,
+      originalError: new Error(`HTTP ${response.status}`),
+    };
   }
 
+  // If we got valid JSON, structure it as BackendError
+  const code = errorBody?.code || 'UNKNOWN_ERROR';
+  const message = errorBody?.message || `Request failed: ${response.status}`;
+  const details = (errorBody?.details || []) as ValidationDetail[];
+  const traceId = errorBody?.traceId || 'unknown';
+
   return {
-    status: response.status,
+    code,
     message,
+    details,
+    traceId,
   };
 }
 
 export async function apiGet<T>(path: string): Promise<T> {
-  const response = await fetch(`${apiConfig.baseUrl}${path}`, {
-    method: 'GET',
-    headers: {
-      Accept: 'application/json',
-    },
-  });
+  try {
+    const response = await fetch(`${apiConfig.baseUrl}${path}`, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+      },
+    });
 
-  if (!response.ok) {
-    throw await buildApiError(response);
+    if (!response.ok) {
+      throw await parseBackendError(response);
+    }
+
+    return (await response.json()) as T;
+  } catch (error) {
+    // If already structured error, re-throw
+    if (typeof error === 'object' && error !== null && 'code' in error) {
+      throw error;
+    }
+
+    // Network error (fetch failed, no response)
+    throw {
+      code: 'NETWORK_ERROR',
+      message: 'Failed to connect to server. Please check your connection.',
+      originalError: error,
+    } as NetworkError;
   }
-
-  return (await response.json()) as T;
 }
 
 export async function apiPost<TResponse, TBody>(path: string, body: TBody): Promise<TResponse> {
-  const response = await fetch(`${apiConfig.baseUrl}${path}`, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  });
+  try {
+    const response = await fetch(`${apiConfig.baseUrl}${path}`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
 
-  if (!response.ok) {
-    throw await buildApiError(response);
+    if (!response.ok) {
+      throw await parseBackendError(response);
+    }
+
+    return (await response.json()) as TResponse;
+  } catch (error) {
+    // If already structured error, re-throw
+    if (typeof error === 'object' && error !== null && 'code' in error) {
+      throw error;
+    }
+
+    // Network error (fetch failed, no response)
+    throw {
+      code: 'NETWORK_ERROR',
+      message: 'Failed to connect to server. Please check your connection.',
+      originalError: error,
+    } as NetworkError;
   }
-
-  return (await response.json()) as TResponse;
 }

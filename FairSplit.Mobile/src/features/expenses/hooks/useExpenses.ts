@@ -2,21 +2,24 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { getExpensesByGroupId } from '../api/expensesApi';
 import type { Expense } from '../types';
+import { handleError, shouldNavigateOnError } from '../../../services/errorHandler';
+import type { BackendError } from '../../../services/errorTypes';
 
 export function useExpenses(groupId: string) {
 	const [expenses, setExpenses] = useState<Expense[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
-	const [errorMessage, setErrorMessage] = useState<string | null>(null);
+	const [error, setError] = useState<BackendError | null>(null);
 
 	const loadExpenses = useCallback(async () => {
 		setIsLoading(true);
-		setErrorMessage(null);
+		setError(null);
 
 		try {
 			const response = await getExpensesByGroupId(groupId);
 			setExpenses(response);
-		} catch {
-			setErrorMessage('Could not load expenses for this group. Check backend status and API URL.');
+		} catch (err) {
+			setError(err as BackendError);
+			handleError(err, { skipToast: false });
 		} finally {
 			setIsLoading(false);
 		}
@@ -29,7 +32,10 @@ export function useExpenses(groupId: string) {
 	return {
 		expenses,
 		isLoading,
-		errorMessage,
+		error,
+		// Keep errorMessage for backward compatibility
+		errorMessage: error ? error.message : null,
 		reload: loadExpenses,
+		shouldNavigateBack: error ? shouldNavigateOnError(error) === 'back' : false,
 	};
 }

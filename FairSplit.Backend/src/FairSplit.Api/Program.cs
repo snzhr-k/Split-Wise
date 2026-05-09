@@ -1,5 +1,6 @@
 using FairSplit.Api.Infrastructure.Http;
 using FairSplit.Api.Infrastructure.Persistence;
+using FairSplit.Api.Services.Business;
 using FairSplit.Api.Services.Implementations;
 using FairSplit.Api.Services.Interfaces;
 using FairSplit.Api.Shared.Utilities;
@@ -19,6 +20,10 @@ builder.Services.AddScoped<IExpenseService, ExpenseService>();
 builder.Services.AddScoped<IExpenseParticipantService, ExpenseParticipantService>();
 builder.Services.AddScoped<IBalanceService, BalanceService>();
 builder.Services.AddScoped<ISettlementService, SettlementService>();
+
+builder.Services.AddSingleton<IExpenseSplitCalculator, ExpenseSplitCalculator>();
+builder.Services.AddSingleton<IExpenseParticipantValidator, ExpenseParticipantValidator>();
+builder.Services.AddSingleton<IBalanceDeltaCalculator, BalanceDeltaCalculator>();
 
 builder.Services.AddScoped<IClock, SystemClock>();
 

@@ -1,5 +1,6 @@
 using FairSplit.Api.Domain.Entities;
 using FairSplit.Api.Repositories.Interfaces;
+using FairSplit.Api.Services.Business;
 using FairSplit.Api.Services.Errors;
 using FairSplit.Api.Services.Interfaces;
 using FairSplit.Api.Services.Models;
@@ -14,7 +15,10 @@ public sealed class ExpenseService(
     IExpenseParticipantRepository expenseParticipantRepository,
     IBalanceRepository balanceRepository,
     ITransactionManager transactionManager,
-    IClock clock) : IExpenseService
+    IClock clock,
+    IExpenseSplitCalculator splitCalculator,
+    IExpenseParticipantValidator participantValidator,
+    IBalanceDeltaCalculator balanceDeltaCalculator) : IExpenseService
 {
     public async Task<IReadOnlyCollection<Expense>> GetByGroupIdAsync(Guid groupId, CancellationToken cancellationToken)
     {
@@ -22,7 +26,7 @@ public sealed class ExpenseService(
 
         if (!groupExists)
         {
-            throw new NotFoundException($"Group '{groupId}' was not found.");
+            throw new NotFoundException("Group was not found.", "GROUP_NOT_FOUND");
         }
 
         return await expenseRepository.GetByGroupIdAsync(groupId, cancellationToken);
@@ -34,14 +38,14 @@ public sealed class ExpenseService(
 
         if (!groupExists)
         {
-            throw new NotFoundException($"Group '{groupId}' was not found.");
+            throw new NotFoundException("Group was not found.", "GROUP_NOT_FOUND");
         }
 
         var expense = await expenseRepository.GetByIdAsync(groupId, expenseId, cancellationToken);
 
         if (expense is null)
         {
-            throw new NotFoundException($"Expense '{expenseId}' was not found in group '{groupId}'.");
+            throw new NotFoundException("Expense was not found in this group.", "EXPENSE_NOT_FOUND");
         }
 
         var participants = await expenseParticipantRepository.GetByExpenseIdAsync(expense.Id, cancellationToken);
@@ -55,24 +59,7 @@ public sealed class ExpenseService(
 
     public async Task<Expense> CreateAsync(CreateExpenseCommand command, CancellationToken cancellationToken)
     {
-        if (command.Amount <= 0)
-        {
-            throw new InvalidSplitException("total amount must be greater than zero");
-        }
-
-        if (command.Participants.Count == 0)
-        {
-            throw new InvalidSplitException("at least one participant is required");
-        }
-
-        var duplicateParticipants = command.Participants
-            .GroupBy(participant => participant.MemberId)
-            .Any(group => group.Count() > 1);
-
-        if (duplicateParticipants)
-        {
-            throw new InvalidSplitException("participants cannot contain duplicates");
-        }
+        participantValidator.Validate(command);
 
         Expense? createdExpense = null;
 
@@ -82,7 +69,7 @@ public sealed class ExpenseService(
 
             if (!groupExists)
             {
-                throw new NotFoundException($"Group '{command.GroupId}' was not found.");
+                throw new NotFoundException("Group was not found.", "GROUP_NOT_FOUND");
             }
 
             var relatedMemberIds = command.Participants
@@ -103,11 +90,13 @@ public sealed class ExpenseService(
                 if (!memberIdsInGroup.Contains(memberId))
                 {
                     throw new ForbiddenOperationException(
-                        $"Member '{memberId}' does not belong to group '{command.GroupId}'.");
+                        "Not all participants belong to this group.",
+                        "MEMBER_NOT_IN_GROUP"
+                    );
                 }
             }
 
-            var sharesByMemberId = CalculateShares(command);
+            var sharesByMemberId = splitCalculator.CalculateShares(command);
 
             createdExpense = new Expense
             {
@@ -132,68 +121,14 @@ public sealed class ExpenseService(
 
             await expenseParticipantRepository.AddRangeAsync(expenseParticipants, innerCancellationToken);
 
-            var balanceDeltas = sharesByMemberId.ToDictionary(item => item.Key, item => -item.Value);
-            balanceDeltas[command.PayerMemberId] = balanceDeltas.GetValueOrDefault(command.PayerMemberId) + command.Amount;
+            var balanceDeltas = balanceDeltaCalculator.CalculateDeltas(
+                command.PayerMemberId,
+                command.Amount,
+                sharesByMemberId);
 
             await balanceRepository.ApplyDeltasAsync(command.GroupId, balanceDeltas, innerCancellationToken);
         }, cancellationToken);
 
-        return createdExpense ?? throw new InvalidOperationException("Expense creation did not complete.");
-    }
-
-    private static IReadOnlyDictionary<Guid, decimal> CalculateShares(CreateExpenseCommand command)
-    {
-        return command.SplitType switch
-        {
-            ExpenseSplitType.Equal => CalculateEqualShares(command),
-            ExpenseSplitType.Custom => CalculateCustomShares(command),
-            _ => throw new InvalidSplitException("split type is not supported")
-        };
-    }
-
-    private static IReadOnlyDictionary<Guid, decimal> CalculateEqualShares(CreateExpenseCommand command)
-    {
-        var participantCount = command.Participants.Count;
-        var baseShare = decimal.Round(command.Amount / participantCount, 2, MidpointRounding.AwayFromZero);
-        var shares = command.Participants
-            .Select(participant => new KeyValuePair<Guid, decimal>(participant.MemberId, baseShare))
-            .ToList();
-
-        var distributed = shares.Sum(item => item.Value);
-        var adjustment = command.Amount - distributed;
-
-        if (adjustment != 0)
-        {
-            var lastIndex = shares.Count - 1;
-            shares[lastIndex] = new KeyValuePair<Guid, decimal>(
-                shares[lastIndex].Key,
-                shares[lastIndex].Value + adjustment);
-        }
-
-        return shares.ToDictionary(item => item.Key, item => item.Value);
-    }
-
-    private static IReadOnlyDictionary<Guid, decimal> CalculateCustomShares(CreateExpenseCommand command)
-    {
-        var shares = new Dictionary<Guid, decimal>();
-
-        foreach (var participant in command.Participants)
-        {
-            if (participant.ShareAmount is null || participant.ShareAmount < 0)
-            {
-                throw new InvalidSplitException("custom split requires non-negative amounts for all participants");
-            }
-
-            shares[participant.MemberId] = participant.ShareAmount.Value;
-        }
-
-        var totalCustomAmount = shares.Values.Sum();
-
-        if (totalCustomAmount != command.Amount)
-        {
-            throw new InvalidSplitException("custom split amounts must sum to total amount");
-        }
-
-        return shares;
+        return createdExpense ?? throw new InternalServerException("Expense creation did not complete. This is an internal error.");
     }
 }

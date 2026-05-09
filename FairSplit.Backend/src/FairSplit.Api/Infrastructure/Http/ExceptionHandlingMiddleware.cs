@@ -3,6 +3,15 @@ using System.Text.Json;
 
 namespace FairSplit.Api.Infrastructure.Http;
 
+/// <summary>
+/// Global exception handling middleware.
+/// 
+/// Catches all exceptions in the pipeline:
+/// - AppException-derived: maps to standardized error response with error code and status
+/// - Unexpected exceptions: wrapped as INTERNAL_ERROR, status 500
+/// 
+/// All errors include a traceId for observability and support correlation.
+/// </summary>
 public sealed class ExceptionHandlingMiddleware(RequestDelegate next)
 {
     public async Task InvokeAsync(HttpContext context)
@@ -13,32 +22,49 @@ public sealed class ExceptionHandlingMiddleware(RequestDelegate next)
         }
         catch (Exception ex)
         {
-            await WriteErrorResponseAsync(context, ex);
+            await HandleExceptionAsync(context, ex);
         }
     }
 
-    private static async Task WriteErrorResponseAsync(HttpContext context, Exception exception)
+    private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        var (statusCode, code, message) = exception switch
+        var (statusCode, code, message, details) = exception switch
         {
-            NotFoundException ex => (StatusCodes.Status404NotFound, "not_found", ex.Message),
-            ValidationException ex => (StatusCodes.Status400BadRequest, "validation_error", ex.Message),
-            ConflictException ex => (StatusCodes.Status409Conflict, "conflict", ex.Message),
-            ForbiddenOperationException ex => (StatusCodes.Status403Forbidden, "forbidden", ex.Message),
-            BusinessRuleViolationException ex => (StatusCodes.Status422UnprocessableEntity, "business_rule_violation", ex.Message),
-            _ => (StatusCodes.Status500InternalServerError, "unexpected_error", "An unexpected error occurred.")
+            // Handle AppException-derived exceptions
+            AppException appEx => (
+                appEx.StatusCode,
+                appEx.ErrorCode,
+                appEx.Message,
+                appEx.Details
+            ),
+
+            // Fallback for unhandled exceptions
+            _ => (
+                500,
+                "INTERNAL_ERROR",
+                "An unexpected error occurred.",
+                null as IReadOnlyCollection<ValidationErrorDetail>
+            )
         };
 
         context.Response.StatusCode = statusCode;
         context.Response.ContentType = "application/json";
 
-        var response = new ErrorResponse(
+        var errorResponse = new ErrorResponse(
             Code: code,
             Message: message,
-            TraceId: context.TraceIdentifier);
+            Details: details ?? Array.Empty<ValidationErrorDetail>(),
+            TraceId: context.TraceIdentifier
+        );
 
-        await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        await context.Response.WriteAsJsonAsync(errorResponse);
     }
 
-    private sealed record ErrorResponse(string Code, string Message, string TraceId);
+    private sealed record ErrorResponse(
+        string Code,
+        string Message,
+        IReadOnlyCollection<ValidationErrorDetail> Details,
+        string TraceId
+    );
 }
+
