@@ -20,4 +20,26 @@ public sealed class BalanceService(
 
         return await balanceRepository.GetByGroupIdAsync(groupId, cancellationToken);
     }
+
+    public async Task<Balance> GetByGroupAndMemberIdAsync(
+        Guid groupId,
+        Guid memberId,
+        CancellationToken cancellationToken)
+    {
+        var groupExists = await groupRepository.ExistsAsync(groupId, cancellationToken);
+
+        if (!groupExists)
+        {
+            throw new NotFoundException("Group was not found.", "GROUP_NOT_FOUND");
+        }
+
+        var balance = await balanceRepository.GetByGroupAndMemberIdAsync(groupId, memberId, cancellationToken);
+
+        if (balance is null)
+        {
+            throw new NotFoundException("Balance for this member was not found in the group.", "BALANCE_NOT_FOUND");
+        }
+
+        return balance;
+    }
 }

@@ -18,4 +18,25 @@ public sealed class GroupRepository(FairSplitDbContext dbContext) : IGroupReposi
     {
         return dbContext.Groups.AnyAsync(group => group.Id == groupId, cancellationToken);
     }
+
+    public Task<Group?> GetByIdAsync(Guid groupId, CancellationToken cancellationToken)
+    {
+        return dbContext.Groups
+            .AsNoTracking()
+            .FirstOrDefaultAsync(group => group.Id == groupId, cancellationToken);
+    }
+
+    public Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken)
+    {
+        var normalizedName = name.Trim().ToLowerInvariant();
+
+        return dbContext.Groups.AnyAsync(
+            group => group.Name.ToLower() == normalizedName,
+            cancellationToken);
+    }
+
+    public async Task AddAsync(Group group, CancellationToken cancellationToken)
+    {
+        await dbContext.Groups.AddAsync(group, cancellationToken);
+    }
 }

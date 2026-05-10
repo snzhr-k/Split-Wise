@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("FairSplit.ArchitectureTests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0d32d9976bf5b2402dfa7b1758aa6e1478ef609e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+77397d5f2405086b75c8912566c2833fd8e92700")]
 [assembly: System.Reflection.AssemblyProductAttribute("FairSplit.ArchitectureTests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("FairSplit.ArchitectureTests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

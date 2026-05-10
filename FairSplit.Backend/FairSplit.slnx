@@ -4,6 +4,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/FairSplit.ArchitectureTests/FairSplit.ArchitectureTests.csproj" />
+    <Project Path="tests/FairSplit.IntegrationTests/FairSplit.IntegrationTests.csproj" />
     <Project Path="tests/FairSplit.LayerIsolationTests/FairSplit.LayerIsolationTests.csproj" />
   </Folder>
 </Solution>

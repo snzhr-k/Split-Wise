@@ -1,6 +1,6 @@
 # FairSplit Backend (ASP.NET Core + PostgreSQL)
 
-This folder contains the backend skeleton for FairSplit.
+This folder contains the FairSplit backend implementation.
 
 ## Layer Roles
 
@@ -60,13 +60,20 @@ FairSplit now uses JWT bearer authentication for protected endpoints such as exp
 - Protected resources require `Authorization: Bearer <token>`
 - JWT settings are in `src/FairSplit.Api/appsettings.json`
 
-## Recent API Updates (May 2026)
+## API Coverage (May 2026)
 
-- Implemented `GET /api/groups/{groupId}/members` for the mobile Create Expense screen.
-- Kept `GET /api/groups` public for app bootstrapping.
-- Protected endpoints (for example expense creation and balances) require JWT bearer tokens.
+Implemented endpoints include:
 
-Quick verification:
+- Auth: `POST /api/auth/dev-token`
+- Groups: `GET /api/groups`, `GET /api/groups/{groupId}`, `POST /api/groups`, `POST /api/groups/{groupId}/join`
+- Members: `GET /api/groups/{groupId}/members`
+- Expenses: `POST /api/groups/{groupId}/expenses`, `GET /api/groups/{groupId}/expenses`, `GET /api/groups/{groupId}/expenses/{expenseId}`
+- Settlements: `POST /api/groups/{groupId}/settlements`, `GET /api/groups/{groupId}/settlements`, `GET /api/groups/{groupId}/settlements/{settlementId}`
+- Balances: `GET /api/groups/{groupId}/balances`, `GET /api/groups/{groupId}/balances/{memberId}`
+
+There are no active public API routes returning scaffold `501 Not Implemented` responses.
+
+Public endpoint quick verification:
 
 ```bash
 curl -sS -i http://localhost:5001/api/groups/11111111-1111-1111-1111-111111111111/members
@@ -81,6 +88,13 @@ curl -sS -X POST http://localhost:5001/api/auth/dev-token \
 ```
 
 Use the returned `accessToken` in requests to protected endpoints.
+
+Protected endpoint quick verification:
+
+```bash
+curl -sS -i http://localhost:5001/api/groups/11111111-1111-1111-1111-111111111111/balances \
+	-H 'Authorization: Bearer <accessToken>'
+```
 
 ## How To Test Current Working API
 
@@ -149,7 +163,19 @@ curl -sS -i http://localhost:5001/api/groups/11111111-1111-1111-1111-11111111111
 	-H 'Authorization: Bearer <accessToken>'
 ```
 
-Note: `/api/groups/{groupId}/balances` is currently implemented and should return balances for seeded members after expense creation.
+7. Settlement flow smoke-test:
+
+```bash
+# 7) Create settlement
+curl -sS -i -X POST http://localhost:5001/api/groups/11111111-1111-1111-1111-111111111111/settlements \
+	-H 'Content-Type: application/json' \
+	-H 'Authorization: Bearer <accessToken>' \
+	--data-binary '{"fromMemberId":"33333333-3333-3333-3333-333333333333","toMemberId":"22222222-2222-2222-2222-222222222222","amount":20.00}'
+
+# 8) List settlements
+curl -sS -i http://localhost:5001/api/groups/11111111-1111-1111-1111-111111111111/settlements \
+	-H 'Authorization: Bearer <accessToken>'
+```
 
 ## Architecture Enforcement
 
@@ -162,3 +188,11 @@ dotnet test FairSplit.slnx
 ```
 
 If a developer introduces an invalid dependency (for example, a controller referencing a repository), the test suite fails and can block CI.
+
+## Test Projects
+
+Solution test coverage includes:
+
+- `tests/FairSplit.ArchitectureTests` for layer dependency rules
+- `tests/FairSplit.LayerIsolationTests` for targeted isolation checks
+- `tests/FairSplit.IntegrationTests` for submission-critical API flows (happy path and auth/ownership negatives)

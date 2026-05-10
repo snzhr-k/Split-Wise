@@ -27,11 +27,4 @@ public sealed class MembersController(IMemberService memberService) : Controller
 
         return Ok(response);
     }
-
-    [HttpGet]
-    public async Task<IActionResult> Get(CancellationToken cancellationToken)
-    {
-        await memberService.HandlePlaceholderAsync(cancellationToken);
-        return StatusCode(StatusCodes.Status501NotImplemented, "Members endpoints are scaffolded but not implemented yet.");
-    }
 }

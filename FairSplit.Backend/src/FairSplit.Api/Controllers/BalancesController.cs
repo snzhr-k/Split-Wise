@@ -30,4 +30,22 @@ public sealed class BalancesController(IBalanceService balanceService) : Control
 
         return Ok(response);
     }
+
+    [HttpGet("{memberId:guid}")]
+    [ProducesResponseType(typeof(BalanceResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<BalanceResponse>> GetByGroupAndMemberId(
+        Guid groupId,
+        Guid memberId,
+        CancellationToken cancellationToken)
+    {
+        var balance = await balanceService.GetByGroupAndMemberIdAsync(groupId, memberId, cancellationToken);
+
+        return Ok(new BalanceResponse
+        {
+            GroupId = balance.GroupId,
+            MemberId = balance.MemberId,
+            NetAmount = balance.NetAmount
+        });
+    }
 }

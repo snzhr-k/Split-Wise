@@ -23,6 +23,15 @@ public sealed class BalanceRepository(FairSplitDbContext dbContext) : IBalanceRe
             .ToListAsync(cancellationToken);
     }
 
+    public Task<Balance?> GetByGroupAndMemberIdAsync(Guid groupId, Guid memberId, CancellationToken cancellationToken)
+    {
+        return dbContext.Balances
+            .AsNoTracking()
+            .FirstOrDefaultAsync(
+                balance => balance.GroupId == groupId && balance.MemberId == memberId,
+                cancellationToken);
+    }
+
     public async Task ApplyDeltasAsync(
         Guid groupId,
         IReadOnlyDictionary<Guid, decimal> deltasByMemberId,

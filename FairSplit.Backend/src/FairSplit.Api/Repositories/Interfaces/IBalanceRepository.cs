@@ -6,6 +6,7 @@ public interface IBalanceRepository
 {
     Task<IReadOnlyCollection<Balance>> GetAllAsync(CancellationToken cancellationToken);
     Task<IReadOnlyCollection<Balance>> GetByGroupIdAsync(Guid groupId, CancellationToken cancellationToken);
+    Task<Balance?> GetByGroupAndMemberIdAsync(Guid groupId, Guid memberId, CancellationToken cancellationToken);
     Task ApplyDeltasAsync(
         Guid groupId,
         IReadOnlyDictionary<Guid, decimal> deltasByMemberId,

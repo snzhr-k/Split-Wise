@@ -7,10 +7,6 @@ public sealed class SettlementRequest
 {
     [Required]
     [NotEmptyGuid]
-    public Guid GroupId { get; set; }
-
-    [Required]
-    [NotEmptyGuid]
     public Guid FromMemberId { get; set; }
 
     [Required]
