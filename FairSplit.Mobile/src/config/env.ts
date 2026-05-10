@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 
 const envApiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL?.trim();
+const envAuthToken = process.env.EXPO_PUBLIC_DEV_AUTH_TOKEN?.trim();
 
 function getFallbackBaseUrl() {
   if (Platform.OS === 'android') {
@@ -17,6 +18,7 @@ function normalizeBaseUrl(url: string) {
 
 export const apiConfig = {
   baseUrl: normalizeBaseUrl(envApiBaseUrl || getFallbackBaseUrl()),
+  authToken: envAuthToken || '',
 };
 
 export function getApiBaseUrlHelpText() {

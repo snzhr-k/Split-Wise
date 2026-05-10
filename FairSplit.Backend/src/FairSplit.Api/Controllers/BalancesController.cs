@@ -1,11 +1,13 @@
 using FairSplit.Api.Presentation.Models.Responses;
 using FairSplit.Api.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FairSplit.Api.Controllers;
 
 [ApiController]
 [Route("api/groups/{groupId:guid}/balances")]
+[Authorize]
 public sealed class BalancesController(IBalanceService balanceService) : ControllerBase
 {
     [HttpGet]

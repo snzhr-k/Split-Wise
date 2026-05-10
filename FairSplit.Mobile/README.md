@@ -71,6 +71,54 @@ Expo reads variables prefixed with `EXPO_PUBLIC_`.
 
 If backend runs on a different port, update the URL accordingly.
 
+## Authentication token configuration
+
+If you want the mobile client to call protected backend endpoints, set:
+
+- `EXPO_PUBLIC_DEV_AUTH_TOKEN` in `.env`
+
+Current status (May 2026):
+
+- The app supports bearer auth headers through `src/api/httpClient.ts`.
+- The current implementation uses a dev token from `.env`.
+- A full user login screen/token persistence flow is not implemented yet.
+
+You can obtain a token from the backend dev endpoint:
+
+```bash
+curl -sS -X POST http://localhost:5000/api/auth/dev-token \
+  -H 'Content-Type: application/json' \
+  --data-binary '{"memberId":"22222222-2222-2222-2222-222222222222","displayName":"Alice"}'
+```
+
+Then copy the returned `accessToken` into `EXPO_PUBLIC_DEV_AUTH_TOKEN` and restart Expo.
+
+## iOS Simulator / API Troubleshooting
+
+If groups load but Create Expense shows member-loading errors, verify backend endpoint coverage and port mapping:
+
+1. Backend is running on a reachable host/port (example used during verification):
+
+```bash
+ASPNETCORE_URLS=http://0.0.0.0:5001 dotnet run
+```
+
+2. Mobile `.env` points to the same backend:
+
+```env
+EXPO_PUBLIC_API_BASE_URL=http://<YOUR_MAC_LAN_IP>:5001
+EXPO_PUBLIC_DEV_AUTH_TOKEN=<dev-token>
+```
+
+3. Restart Expo after any `.env` change.
+
+4. Quick backend checks:
+
+```bash
+curl -sS -i http://<YOUR_MAC_LAN_IP>:5001/api/groups
+curl -sS -i http://<YOUR_MAC_LAN_IP>:5001/api/groups/11111111-1111-1111-1111-111111111111/members
+```
+
 For Expo Web testing, browser CORS rules apply; make sure your ASP.NET Core CORS policy allows requests from the Expo Web origin.
 
 ## Notes

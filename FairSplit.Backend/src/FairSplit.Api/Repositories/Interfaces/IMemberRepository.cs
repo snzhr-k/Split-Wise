@@ -5,6 +5,7 @@ namespace FairSplit.Api.Repositories.Interfaces;
 public interface IMemberRepository
 {
     Task<IReadOnlyCollection<Member>> GetAllAsync(CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<Member>> GetByGroupIdAsync(Guid groupId, CancellationToken cancellationToken);
     Task<IReadOnlyCollection<Member>> GetByIdsInGroupAsync(
         Guid groupId,
         IReadOnlyCollection<Guid> memberIds,

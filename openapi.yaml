@@ -8,6 +8,8 @@ servers:
     description: Local development server
 
 tags:
+  - name: Auth
+    description: Token issuance for local development and demo access
   - name: Groups
     description: Group management and joining
   - name: Members
@@ -20,6 +22,29 @@ tags:
     description: Read-only derived balances
 
 paths:
+  /api/auth/dev-token:
+    post:
+      tags: [Auth]
+      summary: Issue a development access token
+      description: Returns a short-lived JWT for local demo use.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DevTokenRequest'
+      responses:
+        '200':
+          description: Access token issued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokenResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
   /api/groups:
     get:
       tags: [Groups]
@@ -132,8 +157,7 @@ paths:
     get:
       tags: [Members]
       summary: List members in a group
-      security:
-        - bearerAuth: []
+      description: Returns members for a group. Current implementation does not require bearer auth.
       responses:
         '200':
           description: Members retrieved
@@ -143,35 +167,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/MemberResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
-  /api/groups/{groupId}/members/{memberId}:
-    parameters:
-      - $ref: '#/components/parameters/GroupId'
-      - $ref: '#/components/parameters/MemberId'
-    get:
-      tags: [Members]
-      summary: Get member details in a group
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Member retrieved
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MemberResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
@@ -827,3 +822,37 @@ components:
         traceId:
           type: string
           example: 00-7f4dbf53f4da8f4393037a0ad5b7c41d-4ba6ce80f94d9a9d-00
+
+    DevTokenRequest:
+      type: object
+      required: [memberId, displayName]
+      properties:
+        memberId:
+          type: string
+          format: uuid
+          example: 22222222-2222-2222-2222-222222222222
+        displayName:
+          type: string
+          example: Alice
+
+    AuthTokenResponse:
+      type: object
+      required: [accessToken, tokenType, expiresAtUtc, memberId, displayName]
+      properties:
+        accessToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        tokenType:
+          type: string
+          example: Bearer
+        expiresAtUtc:
+          type: string
+          format: date-time
+          example: '2026-05-10T18:00:00Z'
+        memberId:
+          type: string
+          format: uuid
+          example: 22222222-2222-2222-2222-222222222222
+        displayName:
+          type: string
+          example: Alice

@@ -47,13 +47,27 @@ async function parseBackendError(response: Response): Promise<BackendError | Net
   };
 }
 
+function buildHeaders(contentType?: string) {
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+  };
+
+  if (contentType) {
+    headers['Content-Type'] = contentType;
+  }
+
+  if (apiConfig.authToken) {
+    headers.Authorization = `Bearer ${apiConfig.authToken}`;
+  }
+
+  return headers;
+}
+
 export async function apiGet<T>(path: string): Promise<T> {
   try {
     const response = await fetch(`${apiConfig.baseUrl}${path}`, {
       method: 'GET',
-      headers: {
-        Accept: 'application/json',
-      },
+      headers: buildHeaders(),
     });
 
     if (!response.ok) {
@@ -80,10 +94,7 @@ export async function apiPost<TResponse, TBody>(path: string, body: TBody): Prom
   try {
     const response = await fetch(`${apiConfig.baseUrl}${path}`, {
       method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
+      headers: buildHeaders('application/json'),
       body: JSON.stringify(body),
     });
 

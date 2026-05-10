@@ -3,12 +3,14 @@ using FairSplit.Api.Presentation.Models.Responses;
 using FairSplit.Api.Services.Errors;
 using FairSplit.Api.Services.Interfaces;
 using FairSplit.Api.Services.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FairSplit.Api.Controllers;
 
 [ApiController]
 [Route("api/groups/{groupId:guid}/expenses")]
+[Authorize]
 public sealed class ExpensesController(IExpenseService expenseService) : ControllerBase
 {
     [HttpGet]

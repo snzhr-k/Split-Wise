@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("FairSplit.LayerIsolationTests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5e4ab476a41ff7a8209a60a84e9f86acf2b6e0db")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0d32d9976bf5b2402dfa7b1758aa6e1478ef609e")]
 [assembly: System.Reflection.AssemblyProductAttribute("FairSplit.LayerIsolationTests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("FairSplit.LayerIsolationTests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

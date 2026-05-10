@@ -52,6 +52,36 @@ dotnet restore
 dotnet run
 ```
 
+## Authentication
+
+FairSplit now uses JWT bearer authentication for protected endpoints such as expense creation and balances.
+
+- Dev token endpoint: `POST /api/auth/dev-token`
+- Protected resources require `Authorization: Bearer <token>`
+- JWT settings are in `src/FairSplit.Api/appsettings.json`
+
+## Recent API Updates (May 2026)
+
+- Implemented `GET /api/groups/{groupId}/members` for the mobile Create Expense screen.
+- Kept `GET /api/groups` public for app bootstrapping.
+- Protected endpoints (for example expense creation and balances) require JWT bearer tokens.
+
+Quick verification:
+
+```bash
+curl -sS -i http://localhost:5001/api/groups/11111111-1111-1111-1111-111111111111/members
+```
+
+Example dev-token request:
+
+```bash
+curl -sS -X POST http://localhost:5001/api/auth/dev-token \
+	-H 'Content-Type: application/json' \
+	--data-binary '{"memberId":"22222222-2222-2222-2222-222222222222","displayName":"Alice"}'
+```
+
+Use the returned `accessToken` in requests to protected endpoints.
+
 ## How To Test Current Working API
 
 1. Start PostgreSQL and verify it is reachable:
@@ -61,12 +91,14 @@ brew services start postgresql@16
 pg_isready -h localhost -p 5432
 ```
 
-2. Run the API (use `5050` because `5000` may be occupied on some macOS setups):
+2. Run the API (use a free port; `5001` was used during current verification):
 
 ```bash
 cd src/FairSplit.Api
-DOTNET_ROLL_FORWARD=Major ASPNETCORE_URLS=http://localhost:5050 dotnet run
+ASPNETCORE_URLS=http://0.0.0.0:5001 dotnet run
 ```
+
+If you see `address already in use`, pick another port and update mobile `.env` accordingly.
 
 3. Seed minimal test data (1 group, 2 members):
 
@@ -90,20 +122,31 @@ COMMIT;
 
 ```bash
 # 1) List groups
-curl -sS -i http://localhost:5050/api/groups
+curl -sS -i http://localhost:5001/api/groups
 
-# 2) List expenses in seeded group (expected: empty first time)
-curl -sS -i http://localhost:5050/api/groups/11111111-1111-1111-1111-111111111111/expenses
+# 2) List group members (used by mobile Create Expense)
+curl -sS -i http://localhost:5001/api/groups/11111111-1111-1111-1111-111111111111/members
 
-# 3) Create expense
-curl -sS -i -X POST http://localhost:5050/api/groups/11111111-1111-1111-1111-111111111111/expenses \
+# 3) Create a dev token (copy accessToken)
+curl -sS -X POST http://localhost:5001/api/auth/dev-token \
 	-H 'Content-Type: application/json' \
+	--data-binary '{"memberId":"22222222-2222-2222-2222-222222222222","displayName":"Alice"}'
+
+# 4) List expenses in seeded group (expected: empty first time)
+curl -sS -i http://localhost:5001/api/groups/11111111-1111-1111-1111-111111111111/expenses \
+	-H 'Authorization: Bearer <accessToken>'
+
+# 5) Create expense
+curl -sS -i -X POST http://localhost:5001/api/groups/11111111-1111-1111-1111-111111111111/expenses \
+	-H 'Content-Type: application/json' \
+	-H 'Authorization: Bearer <accessToken>' \
 	--data-binary @- <<'JSON'
 {"payerMemberId":"22222222-2222-2222-2222-222222222222","amount":120.50,"splitType":"equal","participants":[{"memberId":"22222222-2222-2222-2222-222222222222"},{"memberId":"33333333-3333-3333-3333-333333333333"}]}
 JSON
 
-# 4) Get expense by id (replace {expenseId} with the id from POST response)
-curl -sS -i http://localhost:5050/api/groups/11111111-1111-1111-1111-111111111111/expenses/{expenseId}
+# 6) Get expense by id (replace {expenseId} with the id from POST response)
+curl -sS -i http://localhost:5001/api/groups/11111111-1111-1111-1111-111111111111/expenses/{expenseId} \
+	-H 'Authorization: Bearer <accessToken>'
 ```
 
 Note: `/api/groups/{groupId}/balances` is currently implemented and should return balances for seeded members after expense creation.

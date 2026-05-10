@@ -14,6 +14,14 @@ public sealed class MemberRepository(FairSplitDbContext dbContext) : IMemberRepo
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyCollection<Member>> GetByGroupIdAsync(Guid groupId, CancellationToken cancellationToken)
+    {
+        return await dbContext.Members
+            .AsNoTracking()
+            .Where(member => member.GroupId == groupId)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyCollection<Member>> GetByIdsInGroupAsync(
         Guid groupId,
         IReadOnlyCollection<Guid> memberIds,

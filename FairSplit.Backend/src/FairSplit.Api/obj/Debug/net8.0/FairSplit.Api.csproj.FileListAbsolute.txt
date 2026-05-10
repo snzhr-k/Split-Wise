@@ -111,3 +111,11 @@
 /Users/sanzharkazakhstan/Desktop/University/Spring-2026/Split-Wise/FairSplit.Backend/src/FairSplit.Api/obj/Debug/net8.0/FairSplit.Api.pdb
 /Users/sanzharkazakhstan/Desktop/University/Spring-2026/Split-Wise/FairSplit.Backend/src/FairSplit.Api/obj/Debug/net8.0/FairSplit.Api.genruntimeconfig.cache
 /Users/sanzharkazakhstan/Desktop/University/Spring-2026/Split-Wise/FairSplit.Backend/src/FairSplit.Api/obj/Debug/net8.0/ref/FairSplit.Api.dll
+/Users/sanzharkazakhstan/Desktop/University/Spring-2026/Split-Wise/FairSplit.Backend/src/FairSplit.Api/bin/Debug/net8.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll
+/Users/sanzharkazakhstan/Desktop/University/Spring-2026/Split-Wise/FairSplit.Backend/src/FairSplit.Api/bin/Debug/net8.0/Microsoft.IdentityModel.Abstractions.dll
+/Users/sanzharkazakhstan/Desktop/University/Spring-2026/Split-Wise/FairSplit.Backend/src/FairSplit.Api/bin/Debug/net8.0/Microsoft.IdentityModel.JsonWebTokens.dll
+/Users/sanzharkazakhstan/Desktop/University/Spring-2026/Split-Wise/FairSplit.Backend/src/FairSplit.Api/bin/Debug/net8.0/Microsoft.IdentityModel.Logging.dll
+/Users/sanzharkazakhstan/Desktop/University/Spring-2026/Split-Wise/FairSplit.Backend/src/FairSplit.Api/bin/Debug/net8.0/Microsoft.IdentityModel.Protocols.dll
+/Users/sanzharkazakhstan/Desktop/University/Spring-2026/Split-Wise/FairSplit.Backend/src/FairSplit.Api/bin/Debug/net8.0/Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+/Users/sanzharkazakhstan/Desktop/University/Spring-2026/Split-Wise/FairSplit.Backend/src/FairSplit.Api/bin/Debug/net8.0/Microsoft.IdentityModel.Tokens.dll
+/Users/sanzharkazakhstan/Desktop/University/Spring-2026/Split-Wise/FairSplit.Backend/src/FairSplit.Api/bin/Debug/net8.0/System.IdentityModel.Tokens.Jwt.dll
