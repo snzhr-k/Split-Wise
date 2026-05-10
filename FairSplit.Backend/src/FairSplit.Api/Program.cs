@@ -7,7 +7,12 @@ using FairSplit.Api.Shared.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    // Global model validation filter converts ModelState errors to ValidationException
+    options.Filters.Add<FairSplit.Api.Presentation.Filters.ValidateModelAttribute>();
+})
+.ConfigureApiBehaviorOptions(o => o.SuppressModelStateInvalidFilter = true);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAuthorization();
